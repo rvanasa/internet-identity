@@ -9,6 +9,7 @@ import { validateAlias } from "../addDevice/validateAlias";
 export const promptDeviceAliasTemplate = (props: {
   continue: (alias: string) => void;
   cancel: () => void;
+  placeholder?: string;
 }): TemplateResult => {
   const aliasInput: Ref<HTMLInputElement> = createRef();
   return html`
@@ -48,6 +49,7 @@ export const promptDeviceAliasTemplate = (props: {
             e.currentTarget.setCustomValidity(message);
           }}
           placeholder="Device name"
+          value="${props.placeholder}"
           aria-label="device name"
           type="text"
           required
@@ -78,13 +80,22 @@ export const promptDeviceAliasPage = (props: {
   cancel: () => void;
   continue: (alias: string) => void;
   container?: HTMLElement;
+  placeholder?: string;
 }): void => {
   const container =
     props.container ?? (document.getElementById("pageContent") as HTMLElement);
   render(promptDeviceAliasTemplate(props), container);
 };
 
-export const promptDeviceAlias = (): Promise<string | null> =>
+export const promptDeviceAlias = ({
+  placeholder,
+}: {
+  placeholder?: string;
+}): Promise<string | null> =>
   new Promise((resolve) => {
-    promptDeviceAliasPage({ cancel: () => resolve(null), continue: resolve });
+    promptDeviceAliasPage({
+      cancel: () => resolve(null),
+      continue: resolve,
+      placeholder,
+    });
   });

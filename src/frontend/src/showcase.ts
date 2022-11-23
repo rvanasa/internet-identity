@@ -143,6 +143,7 @@ const iiPages: Record<string, () => void> = {
     promptDeviceAliasPage({
       cancel: () => console.log("canceled"),
       continue: (alias) => console.log("device alias:", alias),
+      placeholder: "dunno",
     }),
   authenticate: () =>
     authenticateBoxTemplate({

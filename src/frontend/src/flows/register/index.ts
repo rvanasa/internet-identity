@@ -5,6 +5,7 @@ import { makeCaptcha } from "./captcha";
 import { LoginFlowResult, cancel } from "../login/flowResult";
 import { constructIdentity } from "./construct";
 import { promptDeviceAlias } from "./alias";
+import { pickDeviceType } from "./deviceType";
 
 /** Registration (anchor creation) flow for new users */
 export const register = async ({
@@ -13,15 +14,25 @@ export const register = async ({
   connection: Connection;
 }): Promise<LoginFlowResult> => {
   try {
-    const alias = await promptDeviceAlias();
-    if (alias === null) {
-      return cancel;
-    }
+    const deviceType = await pickDeviceType();
 
     const [captcha, identity] = await Promise.all([
       makeCaptcha(connection),
-      constructIdentity(),
+      constructIdentity(deviceType),
     ]);
+
+    let placeholder = undefined;
+
+    if (deviceType === "platform") {
+      placeholder = "TouchID on Mac";
+    } else if (deviceType === "cross-platform") {
+      placeholder = "YubiKey";
+    }
+
+    const alias = await promptDeviceAlias({ placeholder });
+    if (alias === null) {
+      return cancel;
+    }
 
     const result = await confirmRegister(
       connection,

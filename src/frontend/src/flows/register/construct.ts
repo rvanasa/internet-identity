@@ -9,6 +9,7 @@ import { nextTick } from "process";
 import { spinner } from "../../components/icons";
 
 /* Anchor construction component (for creating WebAuthn credentials) */
+type DeviceType = "platform" | "cross-platform" | undefined;
 
 const constructingContent = html`
   <div class="l-container c-card c-card--highlight t-centered">
@@ -23,7 +24,9 @@ export const renderConstructing = (): void => {
   render(constructingContent, container);
 };
 
-export const constructIdentity = async (): Promise<IdentifiableIdentity> => {
+export const constructIdentity = async (
+  dt: DeviceType
+): Promise<IdentifiableIdentity> => {
   renderConstructing();
   await tick();
 
@@ -35,7 +38,7 @@ export const constructIdentity = async (): Promise<IdentifiableIdentity> => {
       ? () => Promise.resolve(new DummyIdentity())
       : () =>
           WebAuthnIdentity.create({
-            publicKey: creationOptions(),
+            publicKey: creationOptions([], dt),
           });
 
   return createIdentity();
