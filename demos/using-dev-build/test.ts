@@ -16,9 +16,6 @@ const LOCALHOST = "127.0.0.1";
 const II_DAPP_PORT = 8086;
 const II_DAPP_URL = `http://localhost:${II_DAPP_PORT}`;
 
-const WEBAPP_PORT = 8087;
-const WEBAPP_URL = `http://localhost:${WEBAPP_PORT}`;
-
 type Arguments = { noRun: boolean };
 
 /** Parse CLI arguments
@@ -39,7 +36,7 @@ function parseArguments(): Arguments {
   }
 }
 
-type CanisterIDs = { webapp: string; internetIdentity: string };
+type CanisterIDs = { internetIdentity: string };
 
 /*
  * Read the values from dfx.json and canister_ids.json
@@ -50,11 +47,10 @@ function parseCanisterIDs(): CanisterIDs {
     const canister_ids = JSON.parse(fs.readFileSync(CANISTER_IDS_PATH, "utf8"));
     return {
       internetIdentity: canister_ids["internet_identity"].local,
-      webapp: canister_ids["webapp"].local,
     };
   } catch (e) {
     console.log(
-      `Could not read 'internet_identity' and 'webapp' local canister IDs from ${CANISTER_IDS_PATH}`
+      `Could not read 'internet_identity' local canister IDs from ${CANISTER_IDS_PATH}`
     );
     throw e;
   }
@@ -81,7 +77,6 @@ function spawnProxy(
     "--replica-host",
     replicaHost,
     `${canisterIds.internetIdentity}:${II_DAPP_PORT}`,
-    `${canisterIds.webapp}:${WEBAPP_PORT}`,
   ]);
 }
 
@@ -89,7 +84,7 @@ function main() {
   // Read values and spawn proxy
   const canisterIds = parseCanisterIDs();
   console.log(
-    `Using canister IDs: internet_identity: ${canisterIds.internetIdentity}, webapp: ${canisterIds.webapp}`
+    `Using canister IDs: internet_identity: ${canisterIds.internetIdentity}`
   );
 
   const replicaHost = getReplicaHost();
