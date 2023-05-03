@@ -2,8 +2,11 @@ import { mainWindow } from "$src/components/mainWindow";
 import { I18n } from "$src/i18n";
 import { renderPage, withRef } from "$src/utils/lit-html";
 import { validateAlias } from "$src/utils/validateAlias";
+import { nonNullish } from "@dfinity/utils";
 import { html, TemplateResult } from "lit-html";
+import { ifDefined } from "lit-html/directives/if-defined.js";
 import { createRef, ref, Ref } from "lit-html/directives/ref.js";
+import { UAParser } from "ua-parser-js";
 
 import copyJson from "./index.json";
 
@@ -11,6 +14,7 @@ import copyJson from "./index.json";
 
 export const promptDeviceAliasTemplate = (props: {
   title: string;
+  defaultAlias?: string;
   message?: string | TemplateResult;
   cancelText?: string;
   continue: (alias: string) => void;
@@ -57,6 +61,7 @@ export const promptDeviceAliasTemplate = (props: {
         }}
         placeholder=${copy.placeholder}
         aria-label="device name"
+        value=${ifDefined(props.defaultAlias satisfies string | undefined)}
         type="text"
         required
         maxlength="30"
@@ -88,6 +93,25 @@ export const promptDeviceAliasTemplate = (props: {
 
 export const promptDeviceAliasPage = renderPage(promptDeviceAliasTemplate);
 
+const inferAlias = (deviceInfo: UAParser): string | undefined => {
+  const engineName = deviceInfo.getEngine().name;
+  if (engineName === "WebKit") {
+    return "Apple Passkey";
+  }
+
+  const browser = deviceInfo.getBrowser().name;
+  if (nonNullish(browser)) {
+    const os = deviceInfo.getOS().name;
+    if (nonNullish(os)) {
+      return `${browser} on ${os}`;
+    }
+
+    return browser;
+  }
+
+  return undefined;
+};
+
 export const promptDeviceAlias = ({
   title,
   message,
@@ -98,6 +122,7 @@ export const promptDeviceAlias = ({
   cancelText?: string;
 }): Promise<string | null> =>
   new Promise((resolve) => {
+    const defaultAlias = inferAlias(new UAParser(navigator.userAgent));
     const i18n = new I18n();
     promptDeviceAliasPage({
       title,
@@ -106,5 +131,6 @@ export const promptDeviceAlias = ({
       cancel: () => resolve(null),
       continue: resolve,
       i18n,
+      defaultAlias,
     });
   });
