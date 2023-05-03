@@ -42,7 +42,7 @@ import { recoveryMethodsSection } from "./recoveryMethodsSection";
 import { Devices, Protection, RecoveryKey, RecoveryPhrase } from "./types";
 
 /* Template for the authbox when authenticating to II */
-export const authnTemplateManage = (): AuthnTemplates => {
+export const authnTemplateManage = ({dapps}:{dapps: DappDescription[]}): AuthnTemplates => {
   const wrap = ({
     slot,
     title,
@@ -50,31 +50,41 @@ export const authnTemplateManage = (): AuthnTemplates => {
     slot: string;
     title: string;
   }): TemplateResult => html`
-    <header class="t-centered">
+    <header>
       <h1 class="t-title t-title--main">${title}</h1>
       <p class="t-lead">${slot}</p>
     </header>
   `;
   return {
     firstTime: {
-      slot: wrap({
-        slot: `to dapps on the Internet Computer`,
-        title: "Securely Connect",
-      }),
-      useExistingText: "Manage Existing",
-      createAnchorText: "Create Identity Anchor",
+      slot: html`
+      ${dappsTeaser({
+        dapps,
+        click: () => {},
+        copy: {
+          dapps_explorer: "Dapps explorer",
+          sign_into_dapps: "Sign into dapps",
+        },
+      })}
+      <header class="t-centered">
+        <h1 style="text-align: left;" class="t-title t-title--main">
+          Securely Connect to dapps on the Internet Computer
+        </h1>
+      </header>`,
+      useExistingText: "Use existing",
+      createAnchorText: "Create Internet Identity",
     },
     useExisting: {
       slot: wrap({
-        slot: `to continue to Internet Identity`,
         title: "Enter your Anchor",
+        slot: `to continue to Internet Identity`,
       }),
     },
 
     pick: {
       slot: wrap({
-        slot: "to continue to Internet Identity",
         title: "Choose an Anchor",
+        slot: "to continue to Internet Identity",
       }),
     },
   };
@@ -82,12 +92,14 @@ export const authnTemplateManage = (): AuthnTemplates => {
 
 /* the II authentication flow */
 export const authFlowManage = async (connection: Connection, i18n: I18n) => {
+
+  const dapps = shuffleArray(await getDapps());
   // Go through the login flow, potentially creating an anchor.
   const {
     userNumber,
     connection: authenticatedConnection,
     newAnchor,
-  } = await authenticateBox(connection, i18n, authnTemplateManage());
+  } = await authenticateBox(connection, i18n, authnTemplateManage({dapps}));
 
   // Here, if the user is returning & doesn't have any recovery device, we prompt them to add
   // one. The exact flow depends on the device they use.
