@@ -1,12 +1,12 @@
-import { promptDeviceAlias } from "$src/components/alias";
+import { inferAlias } from "$src/components/alias";
 import {
   apiResultToLoginFlowResult,
-  cancel,
   LoginFlowResult,
 } from "$src/utils/flowResult";
 import { Connection } from "$src/utils/iiConnection";
 import { setAnchorUsed } from "$src/utils/userNumber";
 import { unknownToString } from "$src/utils/utils";
+import { UAParser } from "ua-parser-js";
 import { promptCaptcha } from "./captcha";
 import { displayUserNumber } from "./finish";
 import { savePasskey } from "./passkey";
@@ -18,10 +18,8 @@ export const register = async ({
   connection: Connection;
 }): Promise<LoginFlowResult> => {
   try {
-    const alias = await promptDeviceAlias({ title: "Register this device" });
-    if (alias === null) {
-      return cancel;
-    }
+    // TODO: this does not handle yubikeys etc
+    const alias = inferAlias(new UAParser(navigator.userAgent)) ?? "Browser";
 
     // Kick-off the challenge request early, so that we might already
     // have a captcha to show once we get to the CAPTCHA screen

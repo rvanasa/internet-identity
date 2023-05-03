@@ -93,7 +93,7 @@ export const promptDeviceAliasTemplate = (props: {
 
 export const promptDeviceAliasPage = renderPage(promptDeviceAliasTemplate);
 
-const inferAlias = (deviceInfo: UAParser): string | undefined => {
+export const inferAlias = (deviceInfo: UAParser): string | undefined => {
   const engineName = deviceInfo.getEngine().name;
   if (engineName === "WebKit") {
     return "Apple Passkey";
