@@ -129,7 +129,7 @@ const dapps = await getDapps();
 const authz = authnPages(i18n, { ...authnCnfg, ...authzTemplates });
 const authzAlt = authnPages(i18n, { ...authnCnfg, ...authzTemplatesAlt });
 
-const manageTemplates = authnTemplateManage({dapps});
+const manageTemplates = authnTemplateManage({ dapps });
 const manage = authnPages(i18n, { ...authnCnfg, ...manageTemplates });
 
 const iiPages: Record<string, () => void> = {

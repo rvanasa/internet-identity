@@ -3,6 +3,17 @@ import { html, TemplateResult } from "lit-html";
 import { DappDescription } from "./dapps";
 
 /** A teaser for the dapps explorer, acting as a button */
+export const dappsPretty = ({
+  dapps,
+}: {
+  dapps: DappDescription[];
+}): TemplateResult => {
+  return html`<article class="c-card c-card--naked c-card--narrow">
+    <figure class="c-card__teaser c-marquee">${marqueeList(dapps)}</figure>
+  </article>`;
+};
+
+/** A teaser for the dapps explorer, acting as a button */
 export const dappsTeaser = ({
   dapps,
   click,

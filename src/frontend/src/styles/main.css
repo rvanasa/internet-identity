@@ -638,7 +638,7 @@ a:hover,
   flex-direction: column;
   align-items: center;
   min-height: 100vh;
-  padding: 5vmax;
+  padding: 0 5vmax;
 }
 
 @media (max-width: 512px) {
@@ -804,6 +804,12 @@ a:hover,
 
   background-color: var(--rc-card);
   border-radius: var(--rs-card-border-radius);
+}
+
+.c-card--naked {
+  border: none;
+  background: none;
+  border-radius: 0;
 }
 
 /* c-cards pretty much fill up the screen on small devices so we disable rounding */

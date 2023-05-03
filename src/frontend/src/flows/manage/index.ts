@@ -16,7 +16,7 @@ import { LEGACY_II_URL } from "$src/config";
 import { addDevice } from "$src/flows/addDevice/manage/addDevice";
 import { dappsExplorer } from "$src/flows/dappsExplorer";
 import { DappDescription, getDapps } from "$src/flows/dappsExplorer/dapps";
-import { dappsTeaser } from "$src/flows/dappsExplorer/teaser";
+import { dappsPretty, dappsTeaser } from "$src/flows/dappsExplorer/teaser";
 import { recoveryWizard } from "$src/flows/recovery/recoveryWizard";
 import { setupKey, setupPhrase } from "$src/flows/recovery/setupRecovery";
 import { I18n } from "$src/i18n";
@@ -42,7 +42,11 @@ import { recoveryMethodsSection } from "./recoveryMethodsSection";
 import { Devices, Protection, RecoveryKey, RecoveryPhrase } from "./types";
 
 /* Template for the authbox when authenticating to II */
-export const authnTemplateManage = ({dapps}:{dapps: DappDescription[]}): AuthnTemplates => {
+export const authnTemplateManage = ({
+  dapps,
+}: {
+  dapps: DappDescription[];
+}): AuthnTemplates => {
   const wrap = ({
     slot,
     title,
@@ -55,30 +59,23 @@ export const authnTemplateManage = ({dapps}:{dapps: DappDescription[]}): AuthnTe
       <p class="t-lead">${slot}</p>
     </header>
   `;
+
+  const landing = html` ${dappsPretty({
+      dapps,
+    })}
+    <header class="t-centered l-stack">
+      <h1 style="text-align: left;" class="t-title t-title--main">
+        Securely Connect to dapps on the Internet Computer
+      </h1>
+    </header>`;
   return {
     firstTime: {
-      slot: html`
-      ${dappsTeaser({
-        dapps,
-        click: () => {},
-        copy: {
-          dapps_explorer: "Dapps explorer",
-          sign_into_dapps: "Sign into dapps",
-        },
-      })}
-      <header class="t-centered">
-        <h1 style="text-align: left;" class="t-title t-title--main">
-          Securely Connect to dapps on the Internet Computer
-        </h1>
-      </header>`,
+      slot: landing,
       useExistingText: "Use existing",
       createAnchorText: "Create Internet Identity",
     },
     useExisting: {
-      slot: wrap({
-        title: "Enter your Anchor",
-        slot: `to continue to Internet Identity`,
-      }),
+      slot: landing,
     },
 
     pick: {
@@ -92,14 +89,13 @@ export const authnTemplateManage = ({dapps}:{dapps: DappDescription[]}): AuthnTe
 
 /* the II authentication flow */
 export const authFlowManage = async (connection: Connection, i18n: I18n) => {
-
   const dapps = shuffleArray(await getDapps());
   // Go through the login flow, potentially creating an anchor.
   const {
     userNumber,
     connection: authenticatedConnection,
     newAnchor,
-  } = await authenticateBox(connection, i18n, authnTemplateManage({dapps}));
+  } = await authenticateBox(connection, i18n, authnTemplateManage({ dapps }));
 
   // Here, if the user is returning & doesn't have any recovery device, we prompt them to add
   // one. The exact flow depends on the device they use.
