@@ -173,8 +173,8 @@ fn file_to_asset_path(asset: &File) -> String {
             .chars()
             .take(file_path.len() - ".html".len())
             .collect()
-    } else if file_path.ends_with(".js.gz") {
-        // drop .gz for .js.gz files (i.e. maps **/<foo>.js.gz to **/<foo>.js)
+    } else if file_path.ends_with(".gz") {
+        // drop .gz for .foo.gz files (i.e. maps **/<foo>.js.gz to **/<foo>.js)
         file_path = file_path
             .chars()
             .take(file_path.len() - ".gz".len())

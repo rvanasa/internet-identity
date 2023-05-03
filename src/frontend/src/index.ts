@@ -74,6 +74,7 @@ see more at https://github.com/dfinity/internet-identity#features
 };
 
 const init = async () => {
+  document.documentElement.setAttribute("data-theme", "new");
   try {
     printDevMessage();
   } catch (e) {
