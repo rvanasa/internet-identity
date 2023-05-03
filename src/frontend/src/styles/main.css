@@ -47,6 +47,30 @@
 
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap");
 
+@font-face {
+  font-family: "Circular";
+  src: url("../../assets/fonts/CircularXXWeb-Medium.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Circular";
+  src: url("../../assets/fonts/CircularXXWeb-Regular.woff2") format("woff2");
+  font-style: normal;
+  font-weight: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Circular";
+  src: url("../../assets/fonts/CircularXXWeb-Bold.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+}
+
 /* I) Settings: Global variables, config switches. */
 
 :root {
@@ -138,8 +162,12 @@
 
   --rc-card: var(--rc-background-transparent);
   --rc-card-background: var(--vc-mist);
+  --rc-card-backdrop: rgba(255, 255, 255, 0.2);
+
+  --rc-background-card--background: var(--rc-background-transparent);
 
   --rc-line: var(--vc-brand-alt);
+  --rc-line-interaction: var(--vc-brand-alt);
   --rc-line-inverted: var(--rc-dark);
 
   --rc-interaction: var(--vc-brand-blue);
@@ -147,8 +175,13 @@
   --rc-loading: var(--vc-brand-purple);
 
   --rc-button: var(--vc-brand-purple);
+  --rc-button-pair: var(--vc-brand-purple);
+
   --rc-button--disabled: var(--vc-shadow);
+
   --rc-button-secondary: rgba(215, 205, 235, 0.5);
+  --rc-onButton-secondary: var(--vc-brand-purple);
+
   --rc-onButton: var(--rc-light);
   --rc-onButton--disabled: var(--rc-light-transparent);
 
@@ -179,12 +212,17 @@
     var(--vc-brand-pink) 50%, var(--vc-brand-purple) 90%;
 
   --rg-brand-alt: var(--vc-brand-alt), white;
+  --rg-button: var(--rc-button), var(--rc-button-pair);
   --rg-brand-bruised: var(--vc-brand-blue) 50%, var(--vc-brand-purple) 90%;
 
   /* reference tokens: sizes */
   --rs-inline-grid-gap: var(--vs-inline);
   --rs-inline-icon-gap: var(--vs-inline);
   --rs-inline-button-gap: var(--vs-inline);
+
+  --rs-stack-section: calc(var(--vs-stack) * 3);
+  --rs-stack-section--spacious: calc(var(--vs-stack) * 5);
+  --rs-stack-section--tight: var(--vs-stack);
 
   --rs-list-counter-space: calc(var(--vs-inline) * 2);
   --rs-list-item-stack: calc(var(--vs-stack) * 1.5);
@@ -196,6 +234,8 @@
   --rs-footer-gap: var(--vs-inline);
 
   --rs-logo-stack: calc(var(--vs-gutter) * 8);
+  --rs-logo-stack--top: var(--rs-logo-stack);
+  --rs-logo-stack--bottom: var(--rs-logo-stack);
   --rs-logo-type-stack: var(--vs-stack);
 
   --rs-card-bezel: calc(var(--vs-gutter) * 5);
@@ -213,7 +253,7 @@
 
   --rs-button-bezel: var(--rs-card-bezel-narrow);
   --rs-button-stack: var(--vs-stack);
-  --rs-button-border-radius: var(--vs-border-radius);
+  --rs-button-radius: var(--vs-border-radius);
 
   --rs-input-bezel: calc(var(--rs-button-bezel) * 0.4);
   --rs-input-bezel-narrow: calc(var(--rs-button-bezel) * 0.4);
@@ -231,6 +271,60 @@
 }
 
 /* II) Theme Settings: DarkMode, LightMode, Product Specific stuff */
+
+:root:is([data-theme="new"]) {
+  --vc-brand-purple: #4b19d6;
+  --vc-brand-purple-light: #890eed;
+
+  --vc-light-grey: #d4d8e5;
+
+  --vs-border-radius: 0.8rem;
+
+  --vs-gutter: 0.4rem;
+
+  --rs-stack-section: calc(var(--vs-stack) * 4);
+  --rs-stack-section--spacious: calc(var(--vs-stack) * 5);
+  --rs-stack-section--tight: var(--vs-stack);
+
+  --rc-line: var(--vc-light-grey);
+  --rc-line-interaction: var(--vc-brand-purple);
+
+  --rg-brand-alt: var(--vc-light-grey), white;
+
+  --rc-text-interaction: var(--vc-brand-purple);
+  --rc-text-interaction-inverted: var(--vc-snow);
+
+  --rc-button: var(--vc-brand-purple);
+  --rc-button-pair: var(--vc-brand-purple-light);
+  --rc-onButton: var(--rc-text-interaction-inverted);
+
+  --rc-card-backdrop: transparent;
+  --rc-background-card--background: transparent;
+
+  /* 
+    color used to elevate something from its background 
+    secondary button, card, icon button
+  */
+  --rc-surface: var(--vc-snow);
+
+  --rc-button-secondary: var(--rc-surface);
+  --rc-onButton-secondary: var(--rc-text-interaction);
+
+  --rs-logo-stack--top: calc(var(--vs-gutter) * 8);
+  --rs-logo-stack--bottom: calc(var(--vs-gutter) * 4);
+
+  --rs-card-bezel: calc(var(--vs-gutter) * 6);
+  --rs-card-bezel-x: calc(var(--vs-gutter) * 8);
+  --rs-inline-button-gap: calc(var(--vs-inline) * 1.5);
+
+  --rs-button-bezel: calc(var(--vs-bezel) * 1.2);
+
+  /*
+
+  --rs-card-stack: calc(var(--vs-stack) * 1.5);
+  --rs-card-bezel-narrow: calc(var(--rs-card-bezel) * 0.75);
+  */
+}
 
 /***
  * III) Generic: Ground-zero styles (Normalize.css, resets, box-sizing)
@@ -337,6 +431,7 @@ display:revert; revert to element instead of attribute */
 :root {
   /* general styles */
   font-family: "Inter", sans-serif;
+  font-family: "Circular", sans-serif;
   font-size: 62.5%; /* 10px */
   font-size: max(62.5%, calc(0.6vh + 0.25rem));
   font-weight: 350;
@@ -542,9 +637,15 @@ a:hover,
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   min-height: 100vh;
-  padding: var(--rs-card-bezel);
+  padding: 5vmax;
+}
+
+@media (max-width: 512px) {
+  #pageContent,
+  .l-wrap {
+    padding: var(--rs-card-bezel);
+  }
 }
 
 .l-container {
@@ -717,8 +818,12 @@ a:hover,
   --bezel-x: var(--rs-card-bezel);
   --bezel-y: var(--rs-card-bezel);
 
-  background-color: var(--rc-background-transparent);
-  border-color: transparent;
+  background-color: var(--rc-background-card--background);
+}
+
+:root:is([data-theme="new"]) .c-card--highlight,
+:root:is([data-theme="new"]) .c-card--background {
+  border: none;
 }
 
 /**
@@ -745,7 +850,7 @@ a:hover,
   --bezel-x: calc(var(--rs-card-bezel) * 0.3);
   --bezel-y: calc(var(--rs-card-bezel) * 0.3);
 
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--rc-card-backdrop);
 }
 
 @media (max-width: 512px) {
@@ -855,7 +960,7 @@ a:hover,
 
 .c-marketing-block {
   margin-top: var(--rs-marketing-block-stack);
-  max-width: 17em;
+  max-width: 18em;
 }
 
 /**
@@ -991,7 +1096,7 @@ a:hover,
 .c-logo {
   display: block;
   overflow: hidden;
-  padding: var(--rs-logo-stack) 0;
+  padding: var(--rs-logo-stack--top) 0 var(--rs-logo-stack--bottom);
   font-weight: 600;
   font-size: 0.6em;
 }
@@ -1002,9 +1107,17 @@ a:hover,
   width: 7rem;
 }
 
+:root:is([data-theme="new"]) .c-logo svg {
+  width: 4rem;
+}
+
 .c-logo__type {
   text-align: center;
   margin-top: var(--rs-logo-type-stack);
+}
+
+:root:is([data-theme="new"]) .c-logo__type {
+  display: none;
 }
 
 .t-title + .c-logo {
@@ -1052,14 +1165,15 @@ a:hover,
  */
 
 .c-button {
-  background: var(--rc-button);
+  background: linear-gradient(90deg, var(--rg-button));
+
   color: var(--rc-onButton);
   padding: calc(0.8 * var(--rs-button-bezel)) var(--rs-button-bezel);
   margin-top: var(--rs-button-stack);
   display: block;
   width: 100%;
   text-align: center;
-  border-radius: var(--rs-button-border-radius);
+  border-radius: var(--rs-button-radius);
 }
 
 .c-button--minimal {
@@ -1067,8 +1181,9 @@ a:hover,
   flex-grow: 0;
   flex-shrink: 1;
   margin-top: 0;
-  padding: calc(0.3 * var(--rs-button-bezel)) calc(0.6 * var(--rs-button-bezel))
-    calc(0.2 * var(--rs-button-bezel));
+  font-size: 0.875em;
+  padding: calc(0.5 * var(--rs-button-bezel)) var(--rs-button-bezel)
+    calc(0.4 * var(--rs-button-bezel));
 }
 
 .c-button__icon svg {
@@ -1088,8 +1203,8 @@ a:hover,
 
 .c-button--secondary {
   background: var(--rc-button-secondary);
-  color: var(--rc-button);
-  border: var(--rs-line) solid var(--rc-line);
+  color: var(--rc-onButton-secondary);
+  border: var(--rs-line) solid var(--rc-line-interaction);
 }
 
 .c-button:not([disabled]):focus,
@@ -1132,7 +1247,7 @@ a:hover,
   border: var(--rs-line) solid var(--rc-line);
   display: flex;
   padding: var(--rs-input-bezel) calc(var(--rs-input-bezel) * 2);
-  border-radius: var(--rs-button-border-radius);
+  border-radius: var(--rs-button-radius);
   background: var(--rc-button);
   color: var(--rc-onButton);
   transform: translate(50%, 50%) scale(0.9);
@@ -1583,7 +1698,7 @@ a:hover,
 }
 
 .c-list--anchors {
-  --border-radius: var(--rs-button-border-radius);
+  --border-radius: var(--rs-button-radius);
 }
 
 .c-list__item--icon {
@@ -1859,13 +1974,14 @@ a:hover,
   margin-top: 1rem;
   background: var(--rc-background);
   border: var(--rs-line) solid var(--rc-line);
+  padding: var(--rs-list-parcel-bezel);
 }
 
 .c-action-list__item {
   display: flex;
   position: relative;
   gap: var(--rs-list-gutter);
-  padding: calc(var(--rs-button-bezel) * 0.7) calc(var(--rs-button-bezel) * 0.6);
+  padding: calc(1.5 * var(--rs-list-parcel-bezel)) var(--rs-list-parcel-bezel);
 }
 
 a.c-action-list__item {
@@ -1896,16 +2012,14 @@ a.c-action-list__item {
   background: var(--rc-line);
   position: absolute;
   top: 0;
-  left: calc(var(--rs-button-bezel) * 0.6);
-  right: calc(var(--rs-button-bezel) * 0.6);
+  left: var(--rs-list-parcel-bezel);
+  right: var(--rs-list-parcel-bezel);
 }
 
 .c-action-list__actions {
   display: flex;
   gap: var(--rs-list-gutter);
-  margin-top: calc(var(--rs-button-bezel) * -0.5);
-  padding: 0 calc(var(--rs-button-bezel) * 0.5)
-    calc(var(--rs-button-bezel) * 0.5);
+  padding: 0 var(--rs-list-parcel-bezel) var(--rs-list-parcel-bezel);
 }
 
 .c-action-list__label {
@@ -2312,16 +2426,17 @@ input[type="checkbox"] {
  * it is fine to use value tokens here, because these are generic design
  * helpers. They are not specific to a particular component.
  */
+
 .l-stack {
-  margin-top: calc(var(--vs-stack) * 3);
+  margin-top: var(--rs-stack-section);
 }
 
 .l-stack--spacious {
-  margin-top: calc(var(--vs-stack) * 5);
+  margin-top: var(--rs-stack-section--spacious);
 }
 
 .l-stack--tight {
-  margin-top: var(--vs-stack);
+  margin-top: var(--rs-stack-section--tight);
 }
 
 .l-stack--none {
