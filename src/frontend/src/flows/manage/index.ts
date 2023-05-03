@@ -8,6 +8,7 @@ import {
   AuthnTemplates,
 } from "$src/components/authenticateBox";
 import { displayError } from "$src/components/displayError";
+import { icLogo, logoText } from "$src/components/icons";
 import { withLoader } from "$src/components/loader";
 import { logoutSection } from "$src/components/logout";
 import { mainWindow } from "$src/components/mainWindow";
@@ -54,13 +55,15 @@ export const authnTemplateManage = ({
     slot: string;
     title: string;
   }): TemplateResult => html`
+    <div class="c-logo">${icLogo}</div>
     <header>
       <h1 class="t-title t-title--main">${title}</h1>
       <p class="t-lead">${slot}</p>
     </header>
   `;
 
-  const landing = html` ${dappsPretty({
+  const landing = html` <div>${logoText}</div>
+    ${dappsPretty({
       dapps,
     })}
     <header class="t-centered l-stack">

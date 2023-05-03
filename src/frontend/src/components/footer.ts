@@ -1,14 +1,16 @@
-import { PORTAL_II_URL } from "$src/config";
 import { html, TemplateResult } from "lit-html";
 import { ifDefined } from "lit-html/directives/if-defined.js";
+import { githubIcon, questionIcon } from "./icons";
 
 export const navigationLink = ({
+  icon,
   labelText,
   id,
   url,
   classes,
   rel,
 }: {
+  icon: TemplateResult;
   labelText: string;
   id: string;
   url: string;
@@ -20,27 +22,25 @@ export const navigationLink = ({
   href="${url}"
   target="_blank"
   rel=${ifDefined(rel)}
-  >${labelText}</a
+  >${icon} ${labelText}</a
 >`;
 
 export const footer = html`<footer class="l-footer">
-  ${navigationLink({
-    labelText: "Home",
-    id: "homeLink",
-    url: "/",
-    classes: "t-link--discreet l-footer__link",
-  })}
-  ${navigationLink({
-    labelText: "About",
-    id: "aboutLink",
-    url: PORTAL_II_URL,
-    classes: "t-link--discreet l-footer__link",
-  })}
-  ${navigationLink({
-    labelText: "FAQ",
-    id: "faqLink",
-    url: "https://support.dfinity.org/hc/en-us/sections/8730568843412-Internet-Identity",
-    classes: "t-link--discreet l-footer__link",
-    rel: "noopener noreferrer",
-  })}
+  <div class="l-footer--inner">
+    ${navigationLink({
+      icon: questionIcon,
+      labelText: "Support",
+      id: "support-link",
+      url: "https://support.dfinity.org/hc/en-us/sections/8730568843412-Internet-Identity",
+
+      classes: "t-link--discreet l-footer__link",
+    })}
+    ${navigationLink({
+      icon: githubIcon,
+      labelText: "Source code",
+      id: "source-link",
+      url: "https://github.com/dfinity/internet-identity",
+      classes: "t-link--discreet l-footer__link",
+    })}
+  </div>
 </footer>`;
