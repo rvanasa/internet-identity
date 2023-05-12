@@ -59,7 +59,9 @@ export const authnTemplateAuthorize = ({
     name: string;
     logo: string;
   }) => html`
-    <img class="c-dapp-icon" src=${BASE_URL + logo}></img>
+    <img data-role="known-dapp-image" class="c-dapp-icon" src=${
+      BASE_URL + logo
+    }></img>
     <div class="l-stack">
       ${h1(
         html`${copy.first_time_title_1}<br />${copy.first_time_title_join}
@@ -122,7 +124,7 @@ export const authFlowAuthorize = async (
   const i18n = new I18n();
   const container = document.getElementById("pageContent") as HTMLElement;
   const copy = i18n.i18n(copyJson);
-  const dapps = await getDapps();
+  const dapps = getDapps();
   render(html`<h1>${copy.starting_authentication}</h1>`, container);
   const loadingMessage = (msg: TemplateElement) =>
     render(
@@ -136,7 +138,6 @@ export const authFlowAuthorize = async (
       `,
       container
     );
-  const knownDapp = dapps.find((dapp) => dapp.link === origin);
   const result = await authenticationProtocol({
     authenticate: async (authContext) => {
       const authSuccess = await authenticateBox(
@@ -146,7 +147,9 @@ export const authFlowAuthorize = async (
           origin: authContext.requestOrigin,
           derivationOrigin: authContext.authRequest.derivationOrigin,
           i18n,
-          knownDapp: knownDapp,
+          knownDapp: dapps.find(
+            (dapp) => dapp.link === authContext.requestOrigin
+          ),
         })
       );
 

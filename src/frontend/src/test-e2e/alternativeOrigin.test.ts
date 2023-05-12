@@ -5,6 +5,7 @@ import {
   getWebAuthnCredentials,
   originToRelyingPartyId,
   runInBrowser,
+  switchToNewWindow,
   switchToPopup,
   waitToClose,
 } from "./util";
@@ -18,6 +19,18 @@ import {
   TEST_APP_CANONICAL_URL,
   TEST_APP_NICE_URL,
 } from "./constants";
+
+test("Should show dapp logo for known dapp", async () => {
+  await runInBrowser(async (browser: WebdriverIO.Browser) => {
+    const niceDemoAppView = new DemoAppView(browser);
+    await niceDemoAppView.open(TEST_APP_NICE_URL, II_URL);
+    await niceDemoAppView.waitForDisplay();
+    await niceDemoAppView.signin();
+
+    await switchToNewWindow(browser);
+    await browser.$('[data-role="known-dapp-image"]').waitForExist();
+  });
+}, 300_000);
 
 test("Should not issue delegation when derivationOrigin is missing from /.well-known/ii-alternative-origins", async () => {
   await runInBrowser(async (browser: WebdriverIO.Browser) => {
