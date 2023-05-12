@@ -28,15 +28,17 @@
     "first_time_create": "Securely connect with Internet Identity",
     "first_time_use": "Use existing",
     "first_time_create_text": "Create Internet Identity",
+    "first_time_alternative_of": "You are creating an Internet Identity with",
+    "first_time_alternative_of_join": "and",
 
     "use_existing_title_1": "Enter your",
     "use_existing_title_2": "Internet Identity",
-    "use_existing_subtitle": "to continue",
+    "use_existing_subtitle": "to connect",
     "use_existing_subtitle_join": "to",
 
     "pick_title_1": "Choose your",
     "pick_title_2": "Internet Identity",
-    "pick_subtitle": "to continue",
+    "pick_subtitle": "to connect",
     "pick_subtitle_join": "to"
   }
 }

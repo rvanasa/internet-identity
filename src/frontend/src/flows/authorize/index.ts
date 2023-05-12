@@ -46,9 +46,7 @@ export const authnTemplateAuthorize = ({
   const isAltOriginOf =
     nonNullish(derivationOrigin) && derivationOrigin !== origin
       ? html`
-          ${strong(origin)} ${copy.is_alternative_of}<br />
-          ${strong(derivationOrigin)}<br />
-          ${copy.auth_same_identity}
+           ${copy.first_time_alternative_of} ${strong(origin)} ${copy.first_time_alternative_of_join} ${strong(derivationOrigin)}
         `
       : undefined;
 
