@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "II_FETCH_ROOT_KEY=1 II_DUMMY_CAPTCHA=1 vite",
     "host": "II_FETCH_ROOT_KEY=1 II_DUMMY_CAPTCHA=1 vite --host",
-    "showcase": "II_FETCH_ROOT_KEY=1 vite --mode showcase",
+    "showcase": "II_FETCH_ROOT_KEY=1 II_DUMMY_CAPTCHA=1 vite --mode showcase",
     "build": "tsc --noEmit && vite build",
     "check": "tsc --project ./tsconfig.all.json --noEmit",
     "watch": "npm run check -- --watch",

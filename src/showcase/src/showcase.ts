@@ -128,7 +128,7 @@ const authzTemplatesAlt = authnTemplateAuthorize({
 });
 
 const authzTemplatesKnownAlt = authnTemplateAuthorize({
-  origin: "https://oc.app",
+  origin: "https://nns.ic0.app",
   derivationOrigin: "http://fgte8-ciaaa-aaaad-aaatq-cai.ic0.app",
   i18n,
 
@@ -174,6 +174,7 @@ const iiPages: Record<string, () => void> = {
     }),
 
   // Authorize screens
+
   authorizeNew: () =>
     authz.firstTime({ useExisting: () => console.log("Use existing") }),
   authorizeNewKnown: () =>
