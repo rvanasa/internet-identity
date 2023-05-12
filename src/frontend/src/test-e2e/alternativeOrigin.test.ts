@@ -5,7 +5,6 @@ import {
   getWebAuthnCredentials,
   originToRelyingPartyId,
   runInBrowser,
-  switchToNewWindow,
   switchToPopup,
   waitToClose,
 } from "./util";
@@ -27,7 +26,7 @@ test("Should show dapp logo for known dapp", async () => {
     await niceDemoAppView.waitForDisplay();
     await niceDemoAppView.signin();
 
-    await switchToNewWindow(browser);
+    await switchToPopup(browser);
     await browser.$('[data-role="known-dapp-image"]').waitForExist();
   });
 }, 300_000);

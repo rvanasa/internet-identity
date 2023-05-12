@@ -22,9 +22,10 @@ export const getDapps = (): DappDescription[] => {
     logo: dapp.logo.replace("/img/showcase/", BASE_URL + "icons/"),
   }));
 
-  // Piggy back on the DUMMY_CAPTCHA feature to assume this is a test build
+  // XXX: Piggy back on the DUMMY_CAPTCHA feature to assume this is a test build
   // and add test data
   if (features.DUMMY_CAPTCHA) {
+    // The dapp used in tests
     dapps.push({
       name: "Test Dapp",
       link: "https://nice-name.com",

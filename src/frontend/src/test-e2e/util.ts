@@ -390,15 +390,6 @@ export const waitForImages = async (
     { timeoutMsg: "image wasn't loaded" }
   );
 
-export async function switchToNewWindow(browser: WebdriverIO.Browser) {
-  await browser.waitUntil(
-    async () => (await browser.getWindowHandles()).length === 2,
-    { timeoutMsg: "window did not open" }
-  );
-  const handles = await browser.getWindowHandles();
-  await browser.switchToWindow(handles[1]);
-}
-
 export async function switchToPopup(
   browser: WebdriverIO.Browser
 ): Promise<string> {

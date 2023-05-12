@@ -444,19 +444,18 @@ const iiPages: Record<string, () => void> = {
 const showcase: TemplateResult = html`
   <h1 class="t-title t-title--main">showcase</h1>
   <div class="showcase-grid l-stack">
-    ${Object.entries(iiPages)
-      .map(([pageName, _]) => {
-        // '/' or '/internet-identity/'
-        const baseUrl = import.meta.env.BASE_URL ?? "/";
-        // '/myPage' or '/internet-identity/myPage'
-        const pageLink = baseUrl + pageName;
-        return html`<aside>
-          <a data-page-name=${pageName} href=${pageLink}>
-            <iframe src=${pageLink} title=${pageName}></iframe>
-            <h2>${pageName}</h2>
-          </a>
-        </aside>`;
-      })}
+    ${Object.entries(iiPages).map(([pageName, _]) => {
+      // '/' or '/internet-identity/'
+      const baseUrl = import.meta.env.BASE_URL ?? "/";
+      // '/myPage' or '/internet-identity/myPage'
+      const pageLink = baseUrl + pageName;
+      return html`<aside>
+        <a data-page-name=${pageName} href=${pageLink}>
+          <iframe src=${pageLink} title=${pageName}></iframe>
+          <h2>${pageName}</h2>
+        </a>
+      </aside>`;
+    })}
   </div>
 `;
 
