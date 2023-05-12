@@ -5,8 +5,10 @@ import {
 import { displayError } from "$src/components/displayError";
 import { caretDownIcon, spinner } from "$src/components/icons";
 import { showMessage } from "$src/components/message";
+import { BASE_URL } from "$src/environment";
+import { getDapps } from "$src/flows/dappsExplorer/dapps";
 import { recoveryWizard } from "$src/flows/recovery/recoveryWizard";
-import { DynamicKey, I18n } from "$src/i18n";
+import { I18n } from "$src/i18n";
 import { Connection } from "$src/utils/iiConnection";
 import { TemplateElement } from "$src/utils/lit-html";
 import { Chan, unreachable } from "$src/utils/utils";
@@ -19,61 +21,94 @@ import copyJson from "./index.json";
 
 /* Template for the authbox when authenticating to a dapp */
 export const authnTemplateAuthorize = ({
-  origin: origin_,
+  origin,
   derivationOrigin,
+  knownDapp,
   i18n,
 }: {
   origin: string;
   derivationOrigin?: string;
+  knownDapp?: { name: string; logo: string };
   i18n: I18n;
 }): AuthnTemplates => {
   const copy = i18n.i18n(copyJson);
-  const origin = html` <strong class="t-strong">${origin_}</strong>`;
-  const originInfo =
-    nonNullish(derivationOrigin) && derivationOrigin !== origin_
-      ? mkChasm({
-          info: origin,
-          message: html`<span class="t-strong">${origin}</span>
-            ${copy.is_alternative_of} <br /><span class="t-strong"
-              >${derivationOrigin}</span
-            ><br />${copy.auth_same_identity}`,
-        })
-      : origin;
+  const isKnownDapp = nonNullish(knownDapp);
+  const strong = (slot: TemplateElement) =>
+    html`<strong class="t-strong">${slot}</strong>`;
+  const h1 = (slot: TemplateElement) =>
+    html`<h1
+      class="t-title t-title--main"
+      style="text-align: left; display: inline;"
+    >
+      ${slot}
+    </h1>`;
 
-  const wrap = ({
-    firstTime = false,
-    title,
+  const isAltOriginOf =
+    nonNullish(derivationOrigin) && derivationOrigin !== origin
+      ? html`
+          ${strong(origin)} ${copy.is_alternative_of}<br />
+          ${strong(derivationOrigin)}<br />
+          ${copy.auth_same_identity}
+        `
+      : undefined;
+
+  const firstTimeKnown = ({
+    name,
+    logo,
   }: {
-    firstTime?: boolean;
-    title: DynamicKey;
+    name: string;
+    logo: string;
   }) => html`
+    <img class="c-dapp-icon" src=${BASE_URL + logo}></img>
     <div class="l-stack">
-      <h1 class="t-title t-title--main" style="text-align: left;">${title}</h1>
-      <p class="t-lead l-stack">
-        ${firstTime ? copy.create_to_continue_to : copy.to_continue_to}
-      </p>
-      ${originInfo}
+      ${h1(
+        html`${copy.first_time_title_1}<br />${copy.first_time_title_join}
+          ${name}`
+      )}
+      ${mkChasm({ message: isAltOriginOf ?? strong(origin) })}
+      <p class="t-lead l-stack">${copy.first_time_subtitle}</p>
+   </div>
+  `;
+  const firstTimeUnknown = html`
+    <div class="l-stack">
+      ${h1(copy.first_time_create)}
+      <p class="t-lead l-stack">${copy.first_time_unknown_subtitle}</p>
+      ${nonNullish(isAltOriginOf)
+        ? mkChasm({ info: strong(origin), message: isAltOriginOf })
+        : strong(origin)}
     </div>
   `;
+
+  const returning = (action: "pick" | "use_existing") => html`
+    <div class="l-stack">
+      ${h1(
+        html`${copy[`${action}_title_1`]}<br />${copy[`${action}_title_2`]}`
+      )}
+      <p class="t-lead l-stack">
+        ${copy[`${action}_subtitle`]} ${copy[`${action}_subtitle_join`]}
+        ${isKnownDapp
+          ? mkChasm({
+              info: strong(knownDapp.name),
+              message: isAltOriginOf ?? strong(origin),
+            })
+          : nonNullish(isAltOriginOf)
+          ? mkChasm({ info: strong(origin), message: isAltOriginOf })
+          : strong(origin)}
+      </p>
+    </div>
+  `;
+
   return {
     firstTime: {
-      slot: wrap({ firstTime: true, title: copy.first_time_create }),
+      slot: isKnownDapp ? firstTimeKnown(knownDapp) : firstTimeUnknown,
       useExistingText: copy.first_time_use,
       createAnchorText: copy.first_time_create_text,
     },
     useExisting: {
-      slot: wrap({
-        title: html`<div>
-          ${copy.use_existing_enter_anchor}<br />${copy.internet_identity}
-        </div>`,
-      }),
+      slot: returning("use_existing"),
     },
     pick: {
-      slot: wrap({
-        title: html`<div>
-          ${copy.pick_choose_anchor}<br />${copy.internet_identity}
-        </div>`,
-      }),
+      slot: returning("pick"),
     },
   };
 };
@@ -87,6 +122,7 @@ export const authFlowAuthorize = async (
   const i18n = new I18n();
   const container = document.getElementById("pageContent") as HTMLElement;
   const copy = i18n.i18n(copyJson);
+  const dapps = await getDapps();
   render(html`<h1>${copy.starting_authentication}</h1>`, container);
   const loadingMessage = (msg: TemplateElement) =>
     render(
@@ -100,6 +136,7 @@ export const authFlowAuthorize = async (
       `,
       container
     );
+  const knownDapp = dapps.find((dapp) => dapp.link === origin);
   const result = await authenticationProtocol({
     authenticate: async (authContext) => {
       const authSuccess = await authenticateBox(
@@ -109,6 +146,7 @@ export const authFlowAuthorize = async (
           origin: authContext.requestOrigin,
           derivationOrigin: authContext.authRequest.derivationOrigin,
           i18n,
+          knownDapp: knownDapp,
         })
       );
 
@@ -174,7 +212,7 @@ export const authFlowAuthorize = async (
 
 /** Options to display a "chasm" in the authbox */
 type ChasmOpts = {
-  info: TemplateElement;
+  info?: TemplateElement;
   message: TemplateResult;
 };
 
@@ -189,7 +227,9 @@ const mkChasm = ({ info, message }: ChasmOpts): TemplateResult => {
   return html`
     <span
       id="alternative-origin-chasm-toggle"
+      style="cursor: pointer;"
       class="t-action"
+      data-action="toggle-chasm"
       @click=${() => chasmToggle()}
       >${info}
       <span class="t-link__icon c-chasm__button ${asyncReplace(btnFlipped)}"
@@ -199,7 +239,9 @@ const mkChasm = ({ info, message }: ChasmOpts): TemplateResult => {
     <div class="c-chasm" aria-expanded=${asyncReplace(ariaExpanded)}>
       <div class="c-chasm__inner">
         <div class="c-chasm__arrow"></div>
-        <div class="t-weak c-chasm__content">${message}</div>
+        <div class="t-weak c-chasm__content">
+          <p class="t-paragraph t-paragraph--weak">${message}</p>
+        </div>
       </div>
     </div>
   `;
