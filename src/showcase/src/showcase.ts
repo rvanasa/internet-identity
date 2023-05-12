@@ -132,7 +132,10 @@ const authzTemplatesKnownAlt = authnTemplateAuthorize({
   derivationOrigin: "http://fgte8-ciaaa-aaaad-aaatq-cai.ic0.app",
   i18n,
 
-  knownDapp: { name: "NNS Front-End Dapp", logo: "icons/nnsfront-enddapp_logo.webp" },
+  knownDapp: {
+    name: "NNS Front-End Dapp",
+    logo: "icons/nnsfront-enddapp_logo.webp",
+  },
 });
 
 const authzTemplatesKnown = authnTemplateAuthorize({
