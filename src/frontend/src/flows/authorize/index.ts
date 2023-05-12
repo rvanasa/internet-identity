@@ -43,7 +43,7 @@ export const authnTemplateAuthorize = ({
       ${slot}
     </h1>`;
 
-  const isAltOriginOf =
+  const isAltOriginOf = (action: "pick" | "use_existing" | "first_time") =>
     nonNullish(derivationOrigin) && derivationOrigin !== origin
       ? html`
            ${copy.first_time_alternative_of} ${strong(origin)} ${copy.first_time_alternative_of_join} ${strong(derivationOrigin)}
@@ -51,9 +51,11 @@ export const authnTemplateAuthorize = ({
       : undefined;
 
   const firstTimeKnown = ({
+      action,
     name,
     logo,
   }: {
+      action: "pick" | "use_existing" | "first_time"
     name: string;
     logo: string;
   }) => html`
@@ -63,23 +65,29 @@ export const authnTemplateAuthorize = ({
     <div class="l-stack">
       ${h1(
         html`${copy.first_time_title_1}<br />${copy.first_time_title_join}
-          ${name}`
+          ${name}
+          `
       )}
-      ${mkChasm({ message: isAltOriginOf ?? strong(origin) })}
+      ${mkChasm({ message: isAltOriginOf(action) ?? strong(origin) })}
       <p class="t-lead l-stack">${copy.first_time_subtitle}</p>
    </div>
   `;
-  const firstTimeUnknown = html`
+  const firstTimeUnknown = (action: "pick" | "use_existing" | "first_time") => { 
+
+      const altOrigin = isAltOriginOf(action);
+      return html`
     <div class="l-stack">
       ${h1(copy.first_time_create)}
       <p class="t-lead l-stack">${copy.first_time_unknown_subtitle}</p>
-      ${nonNullish(isAltOriginOf)
-        ? mkChasm({ info: strong(origin), message: isAltOriginOf })
+      ${nonNullish(altOrigin)
+        ? mkChasm({ info: strong(origin), message: altOrigin })
         : strong(origin)}
     </div>
-  `;
+  `;};
 
-  const returning = (action: "pick" | "use_existing") => html`
+  const returning = (action: "pick" | "use_existing") => {
+      const altOrigin = isAltOriginOf(action);
+      return html`
     <div class="l-stack">
       ${h1(
         html`${copy[`${action}_title_1`]}<br />${copy[`${action}_title_2`]}`
@@ -89,18 +97,18 @@ export const authnTemplateAuthorize = ({
         ${isKnownDapp
           ? mkChasm({
               info: strong(knownDapp.name),
-              message: isAltOriginOf ?? strong(origin),
+              message: altOrigin ?? strong(origin),
             })
-          : nonNullish(isAltOriginOf)
-          ? mkChasm({ info: strong(origin), message: isAltOriginOf })
+          : nonNullish(altOrigin)
+          ? mkChasm({ info: strong(origin), message: altOrigin })
           : strong(origin)}
       </p>
     </div>
-  `;
+  `;};
 
   return {
     firstTime: {
-      slot: isKnownDapp ? firstTimeKnown(knownDapp) : firstTimeUnknown,
+      slot: isKnownDapp ? firstTimeKnown({...knownDapp, action: "first_time"}) : firstTimeUnknown("first_time"),
       useExistingText: copy.first_time_use,
       createAnchorText: copy.first_time_create_text,
     },
@@ -237,7 +245,7 @@ const mkChasm = ({ info, message }: ChasmOpts): TemplateResult => {
         >${caretDownIcon}</span
       ></span
     >
-    <div class="c-chasm" aria-expanded=${asyncReplace(ariaExpanded)}>
+    <div class="c-chasm c-chasm--title" aria-expanded=${asyncReplace(ariaExpanded)}>
       <div class="c-chasm__inner">
         <div class="c-chasm__arrow"></div>
         <div class="t-weak c-chasm__content">

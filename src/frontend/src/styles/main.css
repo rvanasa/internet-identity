@@ -1978,6 +1978,12 @@ a:hover,
   grid-template-rows: 0fr;
 }
 
+/* Work around to copy behavior of first t-lead paragraph after title,
+ * since in this case the chasm is inserted inbetween. */
+.c-chasm--title + .t-lead {
+  margin-top: 0.75em;
+}
+
 .c-chasm[aria-expanded="true"] {
   grid-template-rows: 1fr;
   transition: grid-template-rows 400ms cubic-bezier(0.3, 0.7, 0, 1);
