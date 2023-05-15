@@ -427,7 +427,6 @@ jobs:
 
   selenium:
     runs-on: ubuntu-latest
-    needs: [ test-app-build, fast-build-ii ]
     strategy:
       matrix:
         device: [ 'desktop', 'mobile' ]
