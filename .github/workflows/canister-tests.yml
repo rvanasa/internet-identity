@@ -384,6 +384,10 @@ jobs:
             ~/.cargo/bin
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock', 'rust-toolchain.toml') }}-test-2
+      - uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}-test-2
 
       - uses: ./.github/actions/bootstrap
       - uses: ./.github/actions/setup-node
