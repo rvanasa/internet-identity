@@ -460,10 +460,10 @@ jobs:
       - name: 'Run dfx'
         run: dfx start --background
 
-      - uses: ./.github/actions/wait-artifact
+      - uses: ./.github/actions/wait-job
         timeout-minutes: 10
         with:
-          name: test_app.wasm
+          name: test-app-build
 
       - name: 'Download test app wasm'
         uses: actions/download-artifact@v3
@@ -477,10 +477,10 @@ jobs:
           dfx canister create --all
           dfx canister install test_app --wasm test_app.wasm
 
-      - uses: ./.github/actions/wait-artifact
+      - uses: ./.github/actions/wait-job
         timeout-minutes: 10
         with:
-          name: internet_identity_test_fast_wasm.gz
+          name: fast-build-ii
 
       - name: 'Download fast build'
         uses: actions/download-artifact@v3

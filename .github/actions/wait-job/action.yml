@@ -1,0 +1,33 @@
+name: 'Wait for Job'
+description: This action waits until a job with the given name is ready in this GHA "run"
+inputs:
+  name:
+    description: The name of the job
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      env:
+        INPUT_JOB_NAME: ${{ inputs.name }}
+
+      run: |
+        pause=1
+        while true; do
+          jobs=(curl -L \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/dfinity/internet-identity/actions/runs/$GITHUB_RUN_ID/attempts/$GITHUB_RUN_ATTEMPT/jobs")
+
+          echo "found jobs:"
+          echo "$jobs"
+
+          if echo "$jobs" | jq --arg job "$INPUT_JOB_NAME" --exit-status '.jobs | any(.name == $job and .status == "completed")'
+          then
+              echo "found completed job '$INPUT_JOB_NAME'"
+              break;
+          fi
+          echo "job '$INPUT_JOB_NAME' not found, will retry in $pause seconds"
+          sleep "$pause"
+          pause=$(( 2*pause ))
+        done
