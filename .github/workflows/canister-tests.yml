@@ -414,6 +414,7 @@ jobs:
 
       - name: Build II test canister
         run: |
+          npm ci
           II_FETCH_ROOT_KEY=1 \
             II_DUMMY_CAPTCHA=1 \
             II_DUMMY_AUTH=0 \
