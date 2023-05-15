@@ -455,14 +455,16 @@ jobs:
           echo node --version
           node --version
 
-      - name: Start docker compose
-        run: scripts/start-selenium-env --no-hot-reload
-
       - run: npm ci
       - run: npm test
 
       - name: 'Run dfx'
         run: dfx start --background
+
+      - uses: ./.github/actions/wait-artifact
+        timeout-minutes: 10
+        with:
+          name: test_app.wasm
 
       - name: 'Download test app wasm'
         uses: actions/download-artifact@v3
@@ -476,6 +478,11 @@ jobs:
           dfx canister create --all
           dfx canister install test_app --wasm test_app.wasm
 
+      - uses: ./.github/actions/wait-artifact
+        timeout-minutes: 10
+        with:
+          name: internet_identity_test_fast_wasm.gz
+
       - name: 'Download fast build'
         uses: actions/download-artifact@v3
         with:
@@ -486,6 +493,9 @@ jobs:
         run: |
           dfx canister create --all
           dfx canister install internet_identity --wasm internet_identity_test_fast.wasm.gz
+
+      - name: Start docker compose
+        run: scripts/start-selenium-env --no-hot-reload
 
       - run: "II_URL=${{ matrix.domain }} SCREEN=${{ matrix.device }} npm run test:e2e -- --shard=$(tr <<<'${{ matrix.shard }}' -s _ /)" # replace 1_N with 1/N
       - name: Collect docker logs
