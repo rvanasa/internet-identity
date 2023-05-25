@@ -253,12 +253,22 @@ export class MainView extends View {
     await this.browser
       .$(`button.c-dropdown__trigger[data-device="${deviceName}"]`)
       .click();
-    await this.browser
-      .$(`button[data-device="${deviceName}"][data-action='protect']`)
-      .waitForClickable();
-    await this.browser
-      .$(`button[data-device="${deviceName}"][data-action='protect']`)
-      .click();
+    const protectSelector = `button[data-device="${deviceName}"][data-action='protect']`;
+    await this.browser.$(protectSelector).waitForExist();
+
+    await this.browser.waitUntil(
+      () =>
+        this.browser.execute(function (protectSelector) {
+          return (
+            document.querySelector(protectSelector)?.getAnimations().length ===
+            0
+          );
+        }, protectSelector),
+      { timeoutMsg: "Animation didn't end" }
+    );
+
+    await this.browser.$(protectSelector).waitForClickable();
+    await this.browser.$(protectSelector).click();
     await this.browser.waitUntil(this.browser.isAlertOpen);
     await this.browser.acceptAlert();
 
