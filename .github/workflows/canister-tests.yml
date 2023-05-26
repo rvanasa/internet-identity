@@ -334,7 +334,7 @@ jobs:
 
   selenium:
     runs-on: ubuntu-latest
-    needs: [docker-build-ii, test-app-build]
+    needs: [test-app-build]
     strategy:
       matrix:
         device: [ 'desktop', 'mobile' ]
@@ -354,6 +354,11 @@ jobs:
       - uses: ./.github/actions/setup-node
 
       - uses: ./.github/actions/setup-dfx
+
+      - uses: ./.github/actions/wait-job
+        timeout-minutes: 10
+        with:
+          name: docker-build-ii
 
       # Helps with debugging
       - name: Show versions
@@ -377,11 +382,6 @@ jobs:
         with:
           name: internet_identity_test.wasm.gz
           path: .
-
-      - uses: ./.github/actions/wait-job
-        timeout-minutes: 10
-        with:
-          name: docker-build-ii
 
       - name: 'Download test app wasm'
         uses: actions/download-artifact@v3

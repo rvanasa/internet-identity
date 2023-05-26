@@ -28,7 +28,10 @@ runs:
           echo "found jobs:"
           echo "$jobs"
 
-          if jq <<<"$jobs" --arg job "$INPUT_JOB_NAME" --exit-status '.jobs | any(.name == $job and .status == "completed")'
+          if jq <<<"$jobs" \
+                --arg job "$INPUT_JOB_NAME" \
+                --exit-status \
+                '.jobs | select(.name | startswith($job)) | all(.status == "completed")'
           then
               echo "found completed job '$INPUT_JOB_NAME'"
               break;
