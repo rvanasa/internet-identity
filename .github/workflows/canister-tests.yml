@@ -365,6 +365,10 @@ jobs:
           echo docker --version
           docker --version
 
+      - name: Pull docker images
+        working-directory: docker-test-env
+        run: docker compose pull
+
       - name: 'Run dfx'
         run: dfx start --background
 
