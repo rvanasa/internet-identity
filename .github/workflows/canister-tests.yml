@@ -334,7 +334,6 @@ jobs:
 
   selenium:
     runs-on: ubuntu-latest
-    needs: [test-app-build]
     strategy:
       matrix:
         device: [ 'desktop', 'mobile' ]
@@ -355,11 +354,6 @@ jobs:
 
       - uses: ./.github/actions/setup-dfx
 
-      - uses: ./.github/actions/wait-job
-        timeout-minutes: 10
-        with:
-          name: docker-build-ii
-
       # Helps with debugging
       - name: Show versions
         run: |
@@ -377,17 +371,27 @@ jobs:
       - name: 'Run dfx'
         run: dfx start --background
 
-      - name: 'Download II wasm'
-        uses: actions/download-artifact@v3
+      - uses: ./.github/actions/wait-job
+        timeout-minutes: 10
         with:
-          name: internet_identity_test.wasm.gz
-          path: .
+          name: test-app-build
 
       - name: 'Download test app wasm'
         uses: actions/download-artifact@v3
         with:
           name: test_app.wasm
           path: demos/test-app
+
+      - uses: ./.github/actions/wait-job
+        timeout-minutes: 10
+        with:
+          name: docker-build-ii
+
+      - name: 'Download II wasm'
+        uses: actions/download-artifact@v3
+        with:
+          name: internet_identity_test.wasm.gz
+          path: .
 
       - name: Deploy Internet Identity
         run: |
