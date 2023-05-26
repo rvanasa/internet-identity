@@ -612,7 +612,6 @@ jobs:
 
   clean-build:
     runs-on: ${{ matrix.os }}
-    needs: docker-build-ii
     strategy:
       matrix:
         # On main, we run the checks across all platforms. On other branches, in order to speed up checks (on PRs) we skip most platforms
@@ -622,20 +621,39 @@ jobs:
         os: ${{ github.ref == 'refs/heads/main' && fromJson('[ "ubuntu-22.04", "ubuntu-20.04", "macos-11", "macos-12" ]') || fromJson('[ "ubuntu-22.04" ]') }}
     steps:
       - uses: actions/checkout@v3
+      - uses: ./.github/actions/bootstrap
+      - run: npm ci
+      - run: ./scripts/build
+      - uses: ./.github/actions/wait-job
+        timeout-minutes: 10
+        with:
+          name: docker-build-ii
+
       - name: 'Download wasm.gz'
         uses: actions/download-artifact@v3
         with:
           name: internet_identity_production.wasm.gz
           path: .
+
       - run: |
           sha256=$(shasum -a 256 ./internet_identity_production.wasm.gz | cut -d ' ' -f1)
           echo "sha256=$sha256" >> "$GITHUB_OUTPUT"
         id: sha256
 
-      - uses: ./.github/actions/check-build
-        with:
-          # we check that ubuntu builds match the docker build
-          sha256: ${{ startsWith(matrix.os, 'ubuntu') && steps.sha256.outputs.sha256 || '' }}
+      # check the hash
+      - name: Check output hash
+        if: ${{ startsWith(matrix.os, 'ubuntu') }}
+        run: |
+          sha256=$(shasum -a 256 ./internet_identity.wasm.gz | cut -d ' ' -f1)
+          echo got sha "$sha256"
+          echo "checking build hash against ${{ steps.sha256.outputs.sha256 }}"
+          if [ "$sha256" == "${{ steps.sha256.outputs.sha256 }}" ]
+          then
+            echo output sha256 matches expected
+          else
+            echo "sha mismatch: '$sha256' /= '${{ steps.sha256.outputs.sha256 }}'"
+            exit 1
+          fi
 
   interface-compatibility:
     runs-on: ubuntu-latest
