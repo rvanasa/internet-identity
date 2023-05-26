@@ -227,16 +227,8 @@ export class MainView extends View {
     await this.browser.execute(
       "window.scrollTo(0, document.body.scrollHeight)"
     );
-    // Open the dropdown by clicking on the trigger button
-    await this.browser
-      .$(`button.c-dropdown__trigger[data-device="${deviceName}"]`)
-      .click();
-    await this.browser
-      .$(`button[data-device="${deviceName}"][data-action='rename']`)
-      .waitForClickable();
-    await this.browser
-      .$(`button[data-device="${deviceName}"][data-action='rename']`)
-      .click();
+    await this.openDeviceActions({ deviceName });
+    await this.deviceAction({ deviceName, action: "rename" }).click();
 
     const renameView = new RenameView(this.browser);
     await renameView.waitForDisplay();
@@ -249,27 +241,9 @@ export class MainView extends View {
     await this.browser.execute(
       "window.scrollTo(0, document.body.scrollHeight)"
     );
-    // Open the dropdown by clicking on the trigger button
-    await this.browser
-      .$(`button.c-dropdown__trigger[data-device="${deviceName}"]`)
-      .click();
-    const protectSelector = `button[data-device="${deviceName}"][data-action='protect']`;
-    await this.browser.$(protectSelector).waitForExist();
-
-    await this.browser.waitUntil(
-      () =>
-        this.browser.execute(function (protectSelector) {
-          return (
-            document.querySelector(protectSelector)?.getAnimations().length ===
-            0
-          );
-        }, protectSelector),
-      { timeoutMsg: "Animation didn't end" }
-    );
-
-    await this.browser.$(protectSelector).waitForClickable();
-    await this.browser.$(protectSelector).click();
-    await this.browser.waitUntil(this.browser.isAlertOpen);
+    await this.openDeviceActions({ deviceName });
+    await this.deviceAction({ deviceName, action: "protect" }).click();
+    await this.browser.waitUntil(() => this.browser.isAlertOpen());
     await this.browser.acceptAlert();
 
     const recoveryView = new RecoverView(this.browser);
@@ -289,17 +263,9 @@ export class MainView extends View {
     await this.browser.execute(
       "window.scrollTo(0, document.body.scrollHeight)"
     );
-    // Open the dropdown by clicking on the trigger button
-    await this.browser
-      .$(`button.c-dropdown__trigger[data-device="${deviceName}"]`)
-      .click();
-    await this.browser
-      .$(`button[data-device="${deviceName}"][data-action='unprotect']`)
-      .waitForClickable();
-    await this.browser
-      .$(`button[data-device="${deviceName}"][data-action='unprotect']`)
-      .click();
-    await this.browser.waitUntil(this.browser.isAlertOpen);
+    await this.openDeviceActions({ deviceName });
+    await this.deviceAction({ deviceName, action: "unprotect" }).click();
+    await this.browser.waitUntil(() => this.browser.isAlertOpen());
     await this.browser.acceptAlert();
 
     const recoveryView = new RecoverView(this.browser);
@@ -314,39 +280,45 @@ export class MainView extends View {
       .waitForDisplayed({ timeout: 10_000, reverse: true });
   }
 
-  async remove(deviceName: string): Promise<void> {
-    // Open the dropdown by clicking on the trigger button
-    await this.browser
-      .$(`button.c-dropdown__trigger[data-device="${deviceName}"]`)
-      .click();
-    await this.browser
-      .$(`button[data-device="${deviceName}"][data-action='remove']`)
-      .waitForClickable();
-    await this.browser
-      .$(`button[data-device="${deviceName}"][data-action='remove']`)
-      .click();
-  }
-
   async reset(deviceName: string): Promise<void> {
-    // Open the dropdown by clicking on the trigger button
-    await this.browser
-      .$(`button.c-dropdown__trigger[data-device="${deviceName}"]`)
-      .click();
-    await this.browser
-      .$(`button[data-device="${deviceName}"][data-action='reset']`)
-      .waitForClickable();
-    await this.browser
-      .$(`button[data-device="${deviceName}"][data-action='reset']`)
-      .click();
-    await this.browser.waitUntil(this.browser.isAlertOpen);
+    await this.openDeviceActions({ deviceName });
+    await this.deviceAction({ deviceName, action: "reset" }).click();
+    await this.browser.waitUntil(() => this.browser.isAlertOpen());
     await this.browser.acceptAlert();
   }
 
   async removeNotDisplayed(deviceName: string): Promise<void> {
-    await this.browser.$(`button[data-device="${deviceName}"]`).click();
-    await this.browser
-      .$("button[data-action='remove']")
-      .waitForDisplayed({ reverse: true });
+    await this.openDeviceActions({ deviceName });
+    await this.deviceAction({ deviceName, action: "remove" }).waitForDisplayed({
+      reverse: true,
+    });
+  }
+
+  async openDeviceActions({
+    deviceName,
+  }: {
+    deviceName: string;
+  }): Promise<void> {
+    const dropdownTrigger = await this.browser.$(
+      `[data-action="open-settings"][data-device="${deviceName}"]`
+    );
+    const dropdownId = await dropdownTrigger.getAttribute("aria-controls");
+    await dropdownTrigger.click();
+    await this.browser.waitUntil(
+      () =>
+        this.browser.execute(
+          (dropdownId) =>
+            document.getElementById(dropdownId)?.getAnimations().length === 0,
+          dropdownId
+        ),
+      { timeoutMsg: "Animation didn't end" }
+    );
+  }
+
+  deviceAction({ deviceName, action }: { deviceName: string; action: string }) {
+    return this.browser.$(
+      `[data-action="${action}"][data-device="${deviceName}"]`
+    );
   }
 }
 
