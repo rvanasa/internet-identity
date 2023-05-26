@@ -266,7 +266,7 @@ jobs:
 
   canister-tests-run:
     runs-on: ${{ matrix.os }}
-    needs: [canister-tests-build, docker-build-ii, docker-build-archive]
+    needs: [canister-tests-build]
     strategy:
       matrix:
         os: [ ubuntu-latest, macos-latest ]
@@ -300,11 +300,21 @@ jobs:
           chmod a+x ic-test-state-machine
           ./ic-test-state-machine --version
 
+      - uses: ./.github/actions/wait-job
+        timeout-minutes: 10
+        with:
+          name: docker-build-ii
+
       - name: 'Download II wasm'
         uses: actions/download-artifact@v3
         with:
           name: internet_identity_test.wasm.gz
           path: .
+
+      - uses: ./.github/actions/wait-job
+        timeout-minutes: 10
+        with:
+          name: docker-build-archive
 
       - name: 'Download archive wasm'
         uses: actions/download-artifact@v3
