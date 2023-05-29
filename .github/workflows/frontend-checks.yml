@@ -176,6 +176,12 @@ jobs:
       - run: cp dist-showcase/index.html dist-showcase/404.html
       - name: Setup Pages
         uses: actions/configure-pages@v2
+
+      - name: Upload showcase
+        uses: actions/upload-artifact@v3
+        with:
+          name: showcase-build
+          path: dist-showcase/
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v1
         with:
