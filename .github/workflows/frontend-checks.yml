@@ -181,7 +181,7 @@ jobs:
         with:
           path: 'dist-showcase'
 
-      - run: npm run build:showcase -- --base "/internet-identity/$GITHUB_BASE_REF"
+      - run: npm run build:showcase -- --base "/internet-identity/$GITHUB_REF_NAME"
       - name: Upload showcase
         uses: actions/upload-artifact@v3
         with:
