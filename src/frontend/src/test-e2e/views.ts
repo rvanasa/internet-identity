@@ -39,6 +39,7 @@ export class WelcomeView extends View {
     await this.browser.$("#recoverButton").waitForDisplayed();
     await this.browser.$("#recoverButton").scrollIntoView();
     await this.browser.$("#recoverButton").click();
+    await this.browser.$('[data-action="recover-with-phrase"]').click();
   }
 }
 

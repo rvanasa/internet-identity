@@ -27,28 +27,28 @@ export const promptRecoveryTemplate = ({
     <div class="l-stack">
       <button
         @click=${() => onUsePhrase()}
-        data-action="next"
+        data-action="recover-with-phrase"
         class="c-button c-button--secondary"
       >
         Use recovery phrase
       </button>
       <button
         @click=${() => onUseDevice()}
-        data-action="next"
+        data-action="recover-with-device"
         class="c-button c-button--secondary"
       >
         Use recovery device
       </button>
       <button
         @click=${() => onForgotAnchor()}
-        data-action="next"
+        data-action="lost-identity"
         class="c-button c-button--secondary"
       >
         Forgot Internet Identity
       </button>
       <button
         @click=${() => cancel()}
-        data-action="next"
+        data-action="cancel"
         class="c-button c-button--primary"
       >
         Back to home
