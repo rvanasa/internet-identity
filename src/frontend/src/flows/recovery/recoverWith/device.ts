@@ -1,4 +1,3 @@
-import { displayError } from "$src/components/displayError";
 import { promptUserNumberTemplate } from "$src/components/promptUserNumber";
 import { toast } from "$src/components/toast";
 import {
@@ -40,23 +39,16 @@ export const recoverWithDevice = ({
         const result = await attemptRecovery({ userNumber, connection });
 
         if (result.tag === "err") {
-          await displayError({ ...result, primaryButton: "Try again" });
-          // TODO: then what? toast.error?
+          toast.error([result.title, result.message].join(": "));
           return;
         }
 
         if (result.tag === "canceled") {
-          await displayError({
-            title: "canceled",
-            message: "foo",
-            primaryButton: "U canceled",
-          });
-          // TODO: then what? toast.error?
+          toast.error("Authentication was canceled");
           return;
         }
 
         result.tag satisfies "ok";
-
         return resolve(result);
       },
       cancel: () => resolve({ tag: "canceled" }),
@@ -75,15 +67,13 @@ const attemptRecovery = async ({
     await connection.lookupCredentials(userNumber);
 
   if (recoveryCredentials.length === 0) {
-    // TODO:  error no recovery device
-    toast.error("No recovery for this number!!");
-    throw new Error("TODO");
+    const title = "No recovery device";
+    const message = "This identity does not have a recovery device";
+    return { tag: "err", title, message };
   }
 
   if (recoveryCredentials.length > 1) {
-    // TODO:  toast: multiple devices
     toast.error("More than one recovery device found, this is unexpected");
-    throw new Error("TODO");
   }
 
   const result = apiResultToLoginFlowResult(
