@@ -39,7 +39,7 @@ import {
 import { displaySeedPhrasePage } from "$src/flows/recovery/displaySeedPhrase";
 import { forgotNumberPage } from "$src/flows/recovery/forgotNumber";
 import { promptRecoveryPage } from "$src/flows/recovery/promptRecovery";
-import { deviceRecoveryPage } from "$src/flows/recovery/recoverWith/device";
+import { recoverWithDevicePage } from "$src/flows/recovery/recoverWith/device";
 import { recoverWithPhrasePage } from "$src/flows/recovery/recoverWith/phrase";
 import { addPhrasePage } from "$src/flows/recovery/recoveryWizard";
 import { badChallenge, promptCaptchaPage } from "$src/flows/register/captcha";
@@ -230,7 +230,7 @@ export const iiPages: Record<string, () => void> = {
       message: "Something cool will happen if you type your anchor",
     }),
   recoverWithDevice: () =>
-    deviceRecoveryPage({
+    recoverWithDevicePage({
       next: () => console.log("next"),
       cancel: () => console.log("cancel"),
     }),
