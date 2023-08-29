@@ -7,14 +7,14 @@ use canister_tests::framework::{
 use ic_test_state_machine_client::CallError;
 
 #[test]
-fn should_register_new_identity() -> Result<(), CallError> {
+fn should_register_new_identity() {
     let env = env();
     let canister_id =
         install_ii_canister_with_arg(&env, II_WASM.clone(), arg_with_anchor_range((1, 2)));
     let authn_method = test_authn_method();
     let identity_number = create_identity_with_authn_method(&env, canister_id, &authn_method);
+
     assert_eq!(identity_number, 1);
-    Ok(())
 }
 
 #[test]
