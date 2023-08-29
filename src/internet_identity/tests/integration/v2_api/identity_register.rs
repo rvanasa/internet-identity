@@ -1,14 +1,18 @@
 use crate::v2_api::authn_method_test_helpers::{
     create_identity_with_authn_method, test_authn_method,
 };
+use candid::Principal;
 use canister_tests::api::internet_identity::api_v2;
 use canister_tests::framework::{
-    arg_with_anchor_range, env, install_ii_canister, install_ii_canister_with_arg, II_WASM,
+    arg_with_anchor_range, env, expect_user_error_with_message, install_ii_canister,
+    install_ii_canister_with_arg, II_WASM,
 };
 use canister_tests::match_value;
+use ic_test_state_machine_client::ErrorCode::CanisterCalledTrap;
 use internet_identity_interface::internet_identity::types::{
     CaptchaCreateResponse, ChallengeAttempt, IdentityRegisterResponse,
 };
+use regex::Regex;
 
 #[test]
 fn should_register_new_identity() {
@@ -60,5 +64,34 @@ fn should_not_exceed_configured_identity_range() {
             None,
         ),
         Ok(Some(IdentityRegisterResponse::CanisterFull))
+    );
+}
+
+#[test]
+fn should_verify_sender_matches_authn_method() {
+    let env = env();
+    let canister_id = install_ii_canister(&env, II_WASM.clone());
+    let authn_method = test_authn_method();
+
+    match_value!(
+        api_v2::captcha_create(&env, canister_id).unwrap(),
+        Some(CaptchaCreateResponse::Ok(challenge))
+    );
+
+    let result = api_v2::identity_register(
+        &env,
+        canister_id,
+        Principal::anonymous(),
+        &authn_method,
+        &ChallengeAttempt {
+            chars: "a".to_string(),
+            key: challenge.challenge_key,
+        },
+        None,
+    );
+    expect_user_error_with_message(
+        result,
+        CanisterCalledTrap,
+        Regex::new("[a-z\\d-]+ could not be authenticated against").unwrap(),
     );
 }
