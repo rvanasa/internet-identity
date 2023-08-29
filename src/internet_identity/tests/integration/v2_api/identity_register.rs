@@ -99,6 +99,7 @@ fn should_verify_sender_matches_authn_method() {
 fn should_not_allow_wrong_captcha() {
     let env = env();
     let canister_id = install_ii_canister(&env, II_WASM.clone());
+    let authn_method = test_authn_method();
 
     match_value!(
         api_v2::captcha_create(&env, canister_id).unwrap(),
