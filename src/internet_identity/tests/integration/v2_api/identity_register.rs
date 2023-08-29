@@ -71,7 +71,6 @@ fn should_not_exceed_configured_identity_range() {
 fn should_verify_sender_matches_authn_method() {
     let env = env();
     let canister_id = install_ii_canister(&env, II_WASM.clone());
-    let authn_method = test_authn_method();
 
     match_value!(
         api_v2::captcha_create(&env, canister_id).unwrap(),
@@ -82,7 +81,7 @@ fn should_verify_sender_matches_authn_method() {
         &env,
         canister_id,
         Principal::anonymous(),
-        &authn_method,
+        &test_authn_method(),
         &ChallengeAttempt {
             chars: "a".to_string(),
             key: challenge.challenge_key,
@@ -93,5 +92,31 @@ fn should_verify_sender_matches_authn_method() {
         result,
         CanisterCalledTrap,
         Regex::new("[a-z\\d-]+ could not be authenticated against").unwrap(),
+    );
+}
+
+#[test]
+fn should_not_allow_wrong_captcha() {
+    let env = env();
+    let canister_id = install_ii_canister(&env, II_WASM.clone());
+
+    match_value!(
+        api_v2::captcha_create(&env, canister_id).unwrap(),
+        Some(CaptchaCreateResponse::Ok(challenge))
+    );
+
+    match_value!(
+        api_v2::identity_register(
+            &env,
+            canister_id,
+            authn_method.principal(),
+            &authn_method,
+            &ChallengeAttempt {
+                chars: "wrong solution".to_string(),
+                key: challenge.challenge_key,
+            },
+            None,
+        ),
+        Ok(Some(IdentityRegisterResponse::BadChallenge))
     );
 }
