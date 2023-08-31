@@ -770,9 +770,14 @@ jobs:
           didc check src/internet_identity/internet_identity.did internet_identity_previous.did
 
   test:
-    runs-on: ubuntu-latest
+    runs-on: macos-12
     steps:
       - uses: actions/checkout@v3
         with:
           ref: '2c8b386a24485c7f125c9e4c07cd74d55586c4ca'
+      - name: Setup docker (missing on MacOS)
+        run: |
+          brew install docker
+          brew reinstall -f --force-bottle qemu
+          colima start
       - run: ./scripts/verify-hash --ii-hash 4b18349a0dc4e619679b2a8dbecf47f27ba8a882a5af74f936f2292b6f5b2641
