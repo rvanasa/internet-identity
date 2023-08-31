@@ -768,3 +768,9 @@ jobs:
         run: |
           curl -sSL https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did -o internet_identity_previous.did
           didc check src/internet_identity/internet_identity.did internet_identity_previous.did
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: ./scripts/verify-hash --ii-hash 642ed31bf9634e723ad597cd6765340d2b1b4ecd3cc54a41f59aac4967ea2f64
