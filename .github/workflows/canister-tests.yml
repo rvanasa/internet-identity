@@ -778,6 +778,6 @@ jobs:
       - name: Setup docker (missing on MacOS)
         run: |
           brew install docker
-          brew reinstall -f --force-bottle qemu
+          brew reinstall -f --force-bottle qemu@8.1.0-1
           colima start
       - run: ./scripts/verify-hash --ii-hash 4b18349a0dc4e619679b2a8dbecf47f27ba8a882a5af74f936f2292b6f5b2641
