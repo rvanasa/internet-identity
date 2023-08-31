@@ -773,4 +773,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: ./scripts/verify-hash --ii-hash 642ed31bf9634e723ad597cd6765340d2b1b4ecd3cc54a41f59aac4967ea2f64
+        with:
+          ref: '2c8b386a24485c7f125c9e4c07cd74d55586c4ca'
+      - run: ./scripts/verify-hash --ii-hash 4b18349a0dc4e619679b2a8dbecf47f27ba8a882a5af74f936f2292b6f5b2641
