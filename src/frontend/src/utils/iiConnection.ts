@@ -7,6 +7,7 @@ import {
   AnchorCredentials,
   Challenge,
   ChallengeResult,
+  CredentialId,
   DeviceData,
   DeviceKey,
   FrontendHostname,
@@ -126,11 +127,15 @@ export class Connection {
   register = async ({
     identity,
     tempIdentity,
+    credentialId,
+    authenticatorAttachment, // TODO: replace with key_type
     alias,
     challengeResult,
   }: {
-    identity: IIWebAuthnIdentity;
+    identity: SignIdentity;
     tempIdentity: SignIdentity;
+    credentialId?: CredentialId;
+    authenticatorAttachment?: AuthenticatorAttachment;
     alias: string;
     challengeResult: ChallengeResult;
   }): Promise<RegisterResult> => {
@@ -149,7 +154,6 @@ export class Connection {
     }
 
     const actor = await this.createActor(delegationIdentity);
-    const credential_id = Array.from(new Uint8Array(identity.rawId));
     const pubkey = Array.from(new Uint8Array(identity.getPublicKey().toDer()));
 
     let registerResponse: RegisterResponse;
@@ -158,10 +162,8 @@ export class Connection {
         {
           alias,
           pubkey,
-          credential_id: [credential_id],
-          key_type: authenticatorAttachmentToKeyType(
-            identity.getAuthenticatorAttachment()
-          ),
+          credential_id: credentialId ? [credentialId] : [],
+          key_type: authenticatorAttachmentToKeyType(authenticatorAttachment),
           purpose: { authentication: null },
           protection: { unprotected: null },
           origin: readDeviceOrigin(),
@@ -234,6 +236,31 @@ export class Connection {
     );
   };
 
+  fromIdentity = async (
+    userNumber: bigint,
+    identity: SignIdentity
+  ): Promise<LoginSuccess> => {
+    // TODO: do we want to somehow check the login?
+
+    const delegationIdentity = await this.requestFEDelegation(identity);
+
+    const actor = await this.createActor(delegationIdentity);
+
+    const connection = new AuthenticatedConnection(
+      this.canisterId,
+      identity,
+      delegationIdentity,
+      userNumber,
+      actor
+    );
+
+    return {
+      kind: "loginSuccess",
+      userNumber,
+      connection,
+    };
+  };
+
   fromWebauthnCredentials = async (
     userNumber: bigint,
     credentials: WebAuthnCredential[]
@@ -283,21 +310,6 @@ export class Connection {
       connection,
     };
   };
-  fromIdentity = async (
-    userNumber: bigint,
-    identity: SignIdentity
-  ): Promise<AuthenticatedConnection> => {
-    const delegationIdentity = await this.requestFEDelegation(identity);
-    const actor = await this.createActor(delegationIdentity);
-
-    return new AuthenticatedConnection(
-      this.canisterId,
-      identity,
-      delegationIdentity,
-      userNumber,
-      actor
-    );
-  };
 
   fromSeedPhrase = async (
     userNumber: bigint,
@@ -324,18 +336,21 @@ export class Connection {
       };
     }
     const delegationIdentity = await this.requestFEDelegation(identity);
+
     const actor = await this.createActor(delegationIdentity);
+
+    const connection = new AuthenticatedConnection(
+      this.canisterId,
+      identity,
+      delegationIdentity,
+      userNumber,
+      actor
+    );
 
     return {
       kind: "loginSuccess",
       userNumber,
-      connection: new AuthenticatedConnection(
-        this.canisterId,
-        identity,
-        delegationIdentity,
-        userNumber,
-        actor
-      ),
+      connection,
     };
   };
 

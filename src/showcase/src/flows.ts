@@ -27,19 +27,32 @@ const registerFlowOpts: RegisterFlowOpts<null> = {
       connection: null,
     };
   },
+  storePinIdentity: () => {
+    toast.info("PIN identity was stored");
+    return Promise.resolve();
+  },
   registrationAllowed: true,
 } as const;
 
 export const iiFlows: Record<string, () => void> = {
   loginManage: async () => {
-    const result = await authenticateBoxFlow<null>({
+    const result = await authenticateBoxFlow<null, "identity">({
       i18n,
       templates: manageTemplates,
       addDevice: () => {
         toast.info(html`Added device`);
         return Promise.resolve({ alias: "My Device" });
       },
-      login: async () => {
+      loginPasskey: async () => {
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        toast.info(html`Logged in`);
+        return Promise.resolve({
+          tag: "ok",
+          userNumber: BigInt(1234),
+          connection: null,
+        });
+      },
+      loginPinIdentityMaterial: async () => {
         await new Promise((resolve) => setTimeout(resolve, 2000));
         toast.info(html`Logged in`);
         return Promise.resolve({
@@ -55,6 +68,18 @@ export const iiFlows: Record<string, () => void> = {
           userNumber: BigInt(1234),
           connection: null,
         });
+      },
+      retrievePinIdentityMaterial: ({ userNumber }) => {
+        toast.info(
+          html`Looking up identity for ${userNumber} (pretending only 10000 has
+          pin identity)`
+        );
+
+        if (userNumber !== BigInt(100000)) {
+          return Promise.resolve(undefined);
+        }
+
+        return Promise.resolve("identity");
       },
       registerFlowOpts,
     });
@@ -75,7 +100,7 @@ export const iiFlows: Record<string, () => void> = {
     const result = await registerFlow<null>(registerFlowOpts);
 
     toast.success(html`
-      Identity successfully created!<br />
+      Flow completed!<br />
       <p class="l-stack">
         <strong class="t-strong">${prettyResult(result)}</strong>
       </p>

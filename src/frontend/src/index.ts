@@ -1,4 +1,5 @@
 import { addDeviceSuccess } from "$src/flows/addDevice/manage/addDeviceSuccess";
+import { AuthenticatedConnection } from "$src/utils/iiConnection";
 import { showWarningIfNecessary } from "./banner";
 import { displayError } from "./components/displayError";
 import { anyFeatures, features } from "./features";
@@ -15,10 +16,7 @@ import { version } from "./version";
 import { isNullish, nonNullish } from "@dfinity/utils";
 
 // Polyfill Buffer globally for the browser
-import {
-  handleLogin,
-  handleLoginFlowResult,
-} from "$src/components/authenticateBox";
+import { handleLoginFlowResult } from "$src/components/authenticateBox";
 import { Buffer } from "buffer";
 globalThis.Buffer = Buffer;
 
@@ -117,10 +115,12 @@ const init = async () => {
     const renderManage = renderManageWarmup();
 
     // If user "Click" continue in success page, proceed with authentication
-    const result = await handleLogin({
-      login: () => connection.login(userNumber),
-    });
-    const loginData = await handleLoginFlowResult(result);
+    // TODO: handle PIN input
+    // eslint-disable-next-line
+    const result = undefined as any; // await attemptLogin({ userNumber, connection });
+    const loginData = await handleLoginFlowResult<AuthenticatedConnection>(
+      result
+    );
 
     // User have successfully signed-in we can jump to manage page
     if (nonNullish(loginData)) {

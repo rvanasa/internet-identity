@@ -19,11 +19,13 @@ import copyJson from "./passkey.json";
 
 const savePasskeyTemplate = ({
   construct,
+  constructPin,
   i18n,
   cancel,
   scrollToTop = false,
 }: {
   construct: () => void;
+  constructPin: () => void;
   i18n: I18n;
   cancel: () => void;
   /* put the page into view */
@@ -48,9 +50,16 @@ const savePasskeyTemplate = ({
       ${copy.save_passkey}
     </button>
     <button
+      @click=${() => constructPin()}
+      data-action="construct-pin-identity"
+      class="c-button c-button--secondary"
+    >
+      ${copy.without_passkey}
+    </button>
+    <button
       @click=${() => cancel()}
       data-action="cancel"
-      class="c-button c-button--secondary"
+      class="c-button c-button--textOnly"
     >
       ${copy.cancel}
     </button>
@@ -85,7 +94,9 @@ const savePasskeyTemplate = ({
 export const savePasskeyPage = renderPage(savePasskeyTemplate);
 
 // Prompt the user to create a WebAuthn identity
-export const savePasskey = (): Promise<IIWebAuthnIdentity | "canceled"> => {
+export const savePasskey = (): Promise<
+  IIWebAuthnIdentity | "pin" | "canceled"
+> => {
   return new Promise((resolve) =>
     savePasskeyPage({
       i18n: new I18n(),
@@ -99,6 +110,7 @@ export const savePasskey = (): Promise<IIWebAuthnIdentity | "canceled"> => {
           toast.error(errorMessage(e));
         }
       },
+      constructPin: () => resolve("pin"),
     })
   );
 };

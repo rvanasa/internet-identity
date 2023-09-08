@@ -1,4 +1,13 @@
-import { Challenge } from "$generated/internet_identity_types";
+import { Challenge, CredentialId } from "$generated/internet_identity_types";
+import { withLoader } from "$src/components/loader";
+import {
+  PinIdentityMaterial,
+  constructPinIdentity,
+} from "$src/crypto/pinIdentity";
+import { confirmPin } from "$src/flows/pin/confirmPin";
+import { idbStorePinIdentityMaterial } from "$src/flows/pin/idb";
+import { setPin } from "$src/flows/pin/setPin";
+import { pinStepper } from "$src/flows/pin/stepper";
 import { registerStepper } from "$src/flows/register/stepper";
 import { registerDisabled } from "$src/flows/registerDisabled";
 import { LoginFlowCanceled } from "$src/utils/flowResult";
@@ -9,8 +18,10 @@ import {
   RegisterResult,
 } from "$src/utils/iiConnection";
 import { setAnchorUsed } from "$src/utils/userNumber";
+import { SignIdentity } from "@dfinity/agent";
 import { ECDSAKeyIdentity } from "@dfinity/identity";
 import { nonNullish } from "@dfinity/utils";
+import { TemplateResult } from "lit-html";
 import type { UAParser } from "ua-parser-js";
 import { badChallenge, precomputeFirst, promptCaptcha } from "./captcha";
 import { displayUserNumberWarmup } from "./finish";
@@ -20,14 +31,21 @@ import { savePasskey } from "./passkey";
 export const registerFlow = async <T>({
   createChallenge: createChallenge_,
   register,
+  storePinIdentity,
   registrationAllowed,
 }: {
   createChallenge: () => Promise<Challenge>;
   register: (opts: {
     alias: string;
-    identity: IIWebAuthnIdentity;
+    identity: SignIdentity;
     challengeResult: { chars: string; challenge: Challenge };
+    credentialId?: CredentialId;
+    authenticatorAttachment?: AuthenticatorAttachment;
   }) => Promise<RegisterResult<T>>;
+  storePinIdentity: (opts: {
+    userNumber: bigint;
+    pinIdentityMaterial: PinIdentityMaterial;
+  }) => Promise<void>;
   registrationAllowed: boolean;
 }): Promise<RegisterResult<T> | "canceled"> => {
   if (!registrationAllowed) {
@@ -43,25 +61,87 @@ export const registerFlow = async <T>({
   // have a captcha to show once we get to the CAPTCHA screen
   const createChallenge = precomputeFirst(() => createChallenge_());
 
-  const identity = await savePasskey();
-  if (identity === "canceled") {
+  const displayUserNumber = displayUserNumberWarmup();
+  const savePasskeyResult = await savePasskey();
+  if (savePasskeyResult === "canceled") {
+    return "canceled";
+  }
+  const result_ = await (async () => {
+    if (savePasskeyResult === "pin") {
+      const result = await setPin();
+      if (result.tag === "canceled") {
+        return "canceled";
+      }
+
+      result.tag satisfies "ok";
+      const { pin } = result;
+      const confirmed = await confirmPin({ expectedPin: pin });
+      if (confirmed.tag === "canceled") {
+        return "canceled";
+      }
+      confirmed.tag satisfies "ok";
+
+      // XXX: this withLoader could be replaced with one that indicates what's happening (like the
+      // "Hang tight, ..." spinner)
+      const { identity, pinIdentityMaterial } = await withLoader(() =>
+        constructPinIdentity({
+          pin,
+        })
+      );
+      return {
+        identity,
+        alias: "pin",
+        stepper: pinStepper({ current: "captcha" }),
+        finalizeIdentity: (userNumber: bigint) =>
+          storePinIdentity({ userNumber, pinIdentityMaterial }),
+      };
+    } else {
+      const identity = savePasskeyResult;
+      const alias = await inferAlias({
+        authenticatorType: identity.getAuthenticatorAttachment(),
+        userAgent: navigator.userAgent,
+        uaParser,
+      });
+
+      return {
+        identity,
+        alias,
+        stepper: registerStepper({ current: "captcha" }),
+        credentialId: new Uint8Array(identity.rawId),
+        authenticatorAttachment: identity.getAuthenticatorAttachment(),
+      };
+    }
+  })();
+
+  if (result_ === "canceled") {
     return "canceled";
   }
 
-  const alias = await inferAlias({
-    authenticatorType: identity.getAuthenticatorAttachment(),
-    userAgent: navigator.userAgent,
-    uaParser,
-  });
-
-  const displayUserNumber = displayUserNumberWarmup();
+  const {
+    identity,
+    alias,
+    stepper,
+    credentialId,
+    authenticatorAttachment,
+    finalizeIdentity,
+  }: {
+    identity: SignIdentity;
+    alias: string;
+    stepper: TemplateResult;
+    credentialId?: CredentialId;
+    authenticatorAttachment?: AuthenticatorAttachment;
+    finalizeIdentity?: (userNumber: bigint) => Promise<void>;
+  } = result_;
 
   const result = await promptCaptcha({
     createChallenge,
+    stepper,
     register: async ({ chars, challenge }) => {
       const result = await register({
         identity,
         alias,
+        credentialId,
+        authenticatorAttachment,
         challengeResult: { chars, challenge },
       });
 
@@ -71,7 +151,6 @@ export const registerFlow = async <T>({
 
       return result;
     },
-    stepper: registerStepper({ current: "captcha" }),
   });
 
   if ("tag" in result) {
@@ -81,6 +160,7 @@ export const registerFlow = async <T>({
 
   if (result.kind === "loginSuccess") {
     const userNumber = result.userNumber;
+    await finalizeIdentity?.(userNumber);
     setAnchorUsed(userNumber);
     await displayUserNumber({ userNumber });
   }
@@ -125,6 +205,7 @@ export const getRegisterFlowOpts = ({
 
     return result;
   },
+  storePinIdentity: idbStorePinIdentityMaterial,
 });
 
 type AuthenticatorType = ReturnType<

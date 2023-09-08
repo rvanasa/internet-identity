@@ -18,7 +18,7 @@ import {
   RecoveryPhrase,
 } from "$src/utils/recoveryDevice";
 import { unknownToString, unreachable } from "$src/utils/utils";
-import { DerEncodedPublicKey } from "@dfinity/agent";
+import { DerEncodedPublicKey, SignIdentity } from "@dfinity/agent";
 
 import copyJson from "./deviceSettings.json";
 
@@ -217,7 +217,7 @@ export const resetPhrase = async ({
     // If the user was authenticated with the phrase, then replace the connection
     // to use the new phrase to void logging them out
     const nextConnection = sameDevice
-      ? await connection.fromIdentity(userNumber, res.ok)
+      ? await fromIdentity({ userNumber, identity: res.ok, connection })
       : undefined;
     return reload(nextConnection);
   } else if ("error" in res) {
@@ -232,6 +232,27 @@ export const resetPhrase = async ({
     res satisfies { canceled: void };
     return reload();
   }
+};
+
+const fromIdentity = async ({
+  userNumber,
+  identity,
+  connection,
+}: {
+  userNumber: bigint;
+  identity: SignIdentity;
+  connection: Connection;
+}): Promise<AuthenticatedConnection> => {
+  const delegationIdentity = await connection.requestFEDelegation(identity);
+  const actor = await connection.createActor(delegationIdentity);
+
+  return new AuthenticatedConnection(
+    connection.canisterId,
+    identity,
+    delegationIdentity,
+    userNumber,
+    actor
+  );
 };
 
 /* Protecting */

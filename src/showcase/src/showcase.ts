@@ -296,6 +296,7 @@ export const iiPages: Record<string, () => void> = {
         new Promise((_) => {
           console.log("Identity Construction");
         }),
+      constructPin: () => toast.info("Requested PIN construction"),
     }),
   promptCaptcha: () =>
     promptCaptchaPage({
